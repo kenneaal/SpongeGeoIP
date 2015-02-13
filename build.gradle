@@ -1,0 +1,64 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'checkstyle'
+
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
+group='net.localecho'
+archivesBaseName='[1.8]SpongeGeoIP'
+version = '0.1a'
+ext.projectName = 'SpongeGeoIP'
+ext.inceptionYear = '2015'
+ext.packaging = 'jar'
+ext.url = 'http://ci.localecho.net/SpongeGeoIP/'
+ext.description = 'SpongeGeoIP'
+ext.organization = 'Localecho.net'
+ext.buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+ext.ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
+ext.commit = project.hasProperty("commit") ? commit : 'unknown'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Quickstart', 'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'Sponge Maven repo'
+        url 'http://repo.spongepowered.org/maven'
+        }
+}
+
+dependencies {
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+    compile "org.spongepowered:spongeapi:1.1-SNAPSHOT"
+    compile group: '"com.maxmind.geoip', name: 'geoip-api', version: '1.2.14'
+    checkstyle 'com.puppycrawl.tools:checkstyle:6.1.1'
+}
+
+checkstyle {
+    configFile = file('checkstyle.xml')
+    configProperties = [
+            "name": project.name,
+            "organization": project.organization,
+            "url": project.url,
+            "year": project.inceptionYear,
+            "suppressions": file('checkstyle-suppressions.xml')
+    ]
+}
+
+test {
+    systemProperties 'property': 'value'
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
+    
