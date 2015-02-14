@@ -79,12 +79,6 @@ public class spongeGeoIP {
         getLogger().info("Got InetSocketAddress.");
         address = saddress.getAddress();
         getLogger().info("Got Address.");
-        final byte[] tmpaddr = new byte[] { 5, 9, 19, (byte) 231 };
-        try {
-            address = InetAddress.getByAddress(tmpaddr);
-        } catch (final UnknownHostException exception) {
-            getLogger().error("Really?!!");
-        }
         try {
             final CountryResponse country = getReader().country(address);
             getLogger().info("Sent query to reader.");
