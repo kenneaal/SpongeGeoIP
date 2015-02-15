@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import ninja.leaping.configurate.ConfigurationNode;
@@ -18,6 +17,7 @@ import org.spongepowered.api.event.state.PreInitializationEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.config.DefaultConfig;
+import org.spongepowered.api.text.message.Messages;
 import org.spongepowered.api.util.event.Subscribe;
 
 import com.google.common.base.Optional;
@@ -44,15 +44,13 @@ public class spongeGeoIP {
         return dbreader;
     }
 
-    private static Game game;
     private Optional<Server> server;
+    private Optional<PluginContainer> pluginContainer;
     public static final String NAME = "SpongeGeoIP";
     private ConfigurationNode config = null;
+    private static Game game;
     private static Logger logger;
-
-    private Optional<PluginContainer> pluginContainer;
     private static InputStream database = null;
-
     private static DatabaseReader dbreader = null;
 
     @Inject
@@ -74,17 +72,11 @@ public class spongeGeoIP {
     @Subscribe
     public void onPlayerJoin(PlayerJoinEvent event) {
         InetAddress address = null;
-        InetSocketAddress saddress = null;
-        saddress = event.getPlayer().getConnection().getAddress();
-        getLogger().info("Got InetSocketAddress.");
-        address = saddress.getAddress();
-        getLogger().info("Got Address.");
+        address = event.getPlayer().getConnection().getAddress().getAddress();
         try {
             final CountryResponse country = getReader().country(address);
-            getLogger().info("Sent query to reader.");
-            event.getPlayer().sendMessage(
-                    "Hey, we see you are connecting from "
-                            + country.getCountry() + "!");
+            this.server.get().broadcastMessage(Messages.of("Player " + event.getPlayer().getName() +
+                    " is connecting from " + country.getCountry() + "."));
             getLogger().info(
                     "[SpongeGeoIP]: Player " + event.getPlayer().getName()
                             + " connected from " + country.getCountry() + ".");
@@ -121,7 +113,11 @@ public class spongeGeoIP {
             if (!getDefaultConfig().exists()) {
                 getDefaultConfig().createNewFile();
                 this.config = getConfigManager().load();
+                config.getNode("announceConnect").setValue(true);
+                config.getNode("informServerLocation").setValue(true);
+                getConfigManager().save(config);
             }
+            config = getConfigManager().load();
         } catch (final IOException exception) {
             getLogger()
                     .error("[SpongeGeoIP]: Couldn't create default configuration file!");
